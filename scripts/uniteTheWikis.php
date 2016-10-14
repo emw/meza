@@ -66,6 +66,11 @@ class UniteTheWikis extends Maintenance {
 	protected $pages;
 	protected $db;
 	protected $maintDir = '/opt/meza/htdocs/mediawiki/maintenance/';
+	protected $maxSimoImport = 100;
+	protected $importSetSize = 100; // FIXME: for testing only
+	protected $mergeDatabase = "merge_wiki";
+	protected $mergeTable = "imports";
+	protected $configTable = "config";
 
 	public function __construct () {
 
@@ -83,26 +88,139 @@ class UniteTheWikis extends Maintenance {
 		$this->addOption(
 			'mergedwiki',
 			'Which wiki will all the pages be merged into',
-			true, true );
+			false, true );
 
 		$this->addOption(
 			'sourcewikis',
 			'Comma separated list of wikis to pull from',
-			true, true );
+			false, true );
+
+		// whether to delete merge database
+		$this->addOption( 'cleanup', 'Sends command to drop temporary database' );
+
+		$this->addOption( 'imports-remaining', 'How many imports left' );
 
 	}
 
 	public function execute () {
 
-		$this->mergedwiki = $this->getOption( 'mergedwiki' );
-		$this->sourcewikis = explode( ',', $this->getOption( 'sourcewikis' ) );
+		if ( $this->hasOption( 'cleanup' ) ) {
+			$this->cleanupDatabase();
+		}
 
-		$this->getPages();
+		else if ( $this->hasOption( 'imports-remaining' ) ) {
+			$this->output( $this->getImportRemaining() );
+			return; // don't want the \n at the end of this function
+		}
+
+		// if there's already stuff in the merge table, process it
+		else if ( $this->checkDB() ) {
+			$this->importSet();
+		}
+
+		// if not, go pull all the pages to merge from the source wikis
+		else {
+			$this->getPages();
+		}
+
+		$this->output( "\n" ); // basically always want to end with a newline
+
+	}
+
+	protected function config ( $key, $value=null ) {
+		// no value passed, getting value
+		$dbw = wfGetDB( DB_MASTER );
+		if ( $value === null ) {
+			$result = $dbw->selectRow(
+				"{$this->mergeDatabase}.{$this->configTable}",
+				'value',
+				array( 'keycolumn' => $key ),
+				__METHOD__
+			);
+			if ( $result ) {
+				return $result->value;
+			}
+			else {
+				return false;
+			}
+		}
+		// value passed, setting value
+		else {
+			return $dbw->insert(
+				"{$this->mergeDatabase}.{$this->configTable}",
+				array( 'keycolumn' => $key, 'value' => $value ),
+				__METHOD__
+			);
+		}
+	}
+
+	protected function setSourceWikis ( $string ) {
+		$this->sourcewikis = explode( ',', $string );
+	}
+
+	protected function checkDB () {
+		$dbw = wfGetDB( DB_MASTER );
+
+		// if DB exists already grab the config from the config table
+		if ( $dbw->query( "SHOW DATABASES LIKE \"{$this->mergeDatabase}\"" )->numRows() > 0 ) {
+			$this->output( "\nTemporary DB already exists, getting config..." );
+			$this->mergedwiki = $this->config( "mergedwiki" );
+			$this->setSourceWikis( $this->config( 'sourcewikis' ) );
+			return true;
+		}
+
+		// if it doesn't exist, create it and the tables
+		else {
+
+			$this->mergedwiki = $this->getOption( 'mergedwiki' );
+			$this->setSourceWikis( $this->getOption( 'sourcewikis' ) );
+
+			if ( ! $this->mergedwiki || ! $this->sourcewikis ) {
+				$this->output( "\n\nFATAL ERROR: you must include both of the following:" );
+				$this->output( "\n  --mergedwiki=<wiki ID of wiki you will merge into" );
+				$this->output( "\n  --sourcewikis=<comma-separated list of wiki IDs you will pull from" );
+				die();
+			}
+
+			// database
+			$this->output( "\nCreating temporary database." );
+			$dbw->query( "CREATE DATABASE IF NOT EXISTS {$this->mergeDatabase}" );
+
+			// merge table (list of imports)
+			$this->output( "\nCreating merge table." );
+			$dbw->query( "
+				CREATE TABLE IF NOT EXISTS `{$this->mergeDatabase}`.`{$this->mergeTable}` (
+					`import_id` int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+					`page_namespace` int NOT NULL,
+					`page_title` varchar(255) binary NOT NULL,
+					`num_wikis` int NOT NULL,
+					`uniques` int NOT NULL,
+					`wikis` varchar(255) binary NOT NULL,
+					`status` smallint NOT NULL
+				) ENGINE=InnoDB, DEFAULT CHARSET=binary;
+			" );
+
+			// config table
+			$this->output( "\nCreating config table." );
+			$dbw->query( "
+				CREATE TABLE IF NOT EXISTS `{$this->mergeDatabase}`.`{$this->configTable}` (
+					`keycolumn` varchar(255) binary NOT NULL PRIMARY KEY,
+					`value` varchar(255) binary NOT NULL
+				) ENGINE=InnoDB, DEFAULT CHARSET=binary;
+			" );
+
+			// populate config
+			$this->config( "mergedwiki", $this->mergedwiki );
+			$this->config( "sourcewikis", $this->getOption( 'sourcewikis' ) );
+
+			return false;
+		}
 
 	}
 
 	public function dumpPageXML ($pages, $wiki) {
 		unlink( $this->fileDumpList );
+		unlink( $this->fileXml );
 
 		if ( is_array($pages) ) {
 			$pagelist = implode( "\n", $pages );
@@ -114,14 +232,14 @@ class UniteTheWikis extends Maintenance {
 		shell_exec( "WIKI=$wiki php {$this->maintDir}dumpBackup.php --full --pagelist={$this->fileDumpList} > {$this->fileXml}" );
 	}
 
-	public function importUniquePage ($pages, $wiki) {
+	public function importXML () {
+		shell_exec( "WIKI={$this->mergedwiki} php {$this->maintDir}importDump.php --no-updates < {$this->fileXml}" );
+	}
 
-		unlink( $this->fileXml );
+	public function importUniquePages ($pages, $wiki) {
 		$this->dumpPageXML( $pages, $wiki );
-		shell_exec( "WIKI={$this->mergedwiki} php {$this->maintDir}importDump.php < {$this->fileXml}" );
-
+		$this->importXML();
 		return;
-
 	}
 
 	public function importIdenticalPages ($pagename, $wikis) {
@@ -132,10 +250,10 @@ class UniteTheWikis extends Maintenance {
 		//   2. Smartly merge (and perhaps delete) all revisions from all wikis
 		// For now just grab any page, biasing towards the oldest wiki (eva) if available.
 		if ( in_array( "eva", $wikis ) ) {
-			$this->importUniquePage( $pagename, "eva" );
+			$this->importUniquePages( $pagename, "eva" );
 		}
 		else {
-			$this->importUniquePage( $pagename, $wikis[0] );
+			$this->importUniquePages( $pagename, $wikis[0] );
 		}
 
 	}
@@ -145,7 +263,6 @@ class UniteTheWikis extends Maintenance {
 		$mergedwiki = $this->mergedwiki;
 
 		$fileDisambig = $this->fileDisambig;
-		$fileXml = $this->fileXml;
 		$fileMove = $this->fileMove;
 
 		$conflictWikis = implode( ', ', $wikis );
@@ -154,13 +271,14 @@ class UniteTheWikis extends Maintenance {
 		$disambigForTemplate = "{{Disambig|\n";
 
 		foreach( $wikis as $wiki ) {
-			unlink( $fileXml );
-			unlink( $fileMove );
 			$wikiForTitle = strtoupper( $wiki );
-			file_put_contents( $fileMove, "$pagename|$pagename ($wikiForTitle)" );
 			$this->dumpPageXML( $pagename, $wiki );
-			shell_exec( "WIKI=$mergedwiki php {$this->maintDir}importDump.php < $fileXml" );
+			$this->importXML();
+
+			unlink( $fileMove );
+			file_put_contents( $fileMove, "$pagename|$pagename ($wikiForTitle)" );
 			shell_exec( "WIKI=$mergedwiki php {$this->maintDir}moveBatch.php --noredirects -r \"$deconflictMsg\" $fileMove" );
+
 			$disambigForTemplate .= "$pagename ($wikiForTitle)\n";
 		}
 
@@ -188,6 +306,17 @@ class UniteTheWikis extends Maintenance {
 		}
 
 		$union = implode( "\nUNION ALL\n", $sqlParts );
+
+		// the ORDER BY is key for optimizing speed:
+		// 1) we want the high namespaces first (properties, forms, templates)
+		//    so they are in the wiki before the pages that use them (otherwise
+		//    I think it may spawn additional jobs)
+		// 2) sort by number of wikis. sort order doesn't really matter, but we
+		//    want all the num_wikis=1 cases to be together so they can be put
+		//    into bulk imports (can't export from multiple wikis in bulk, thus
+		//    can't create an import XML file to import in bulk)
+		// 3) sort by wiki so pages from the same wiki are grouped together, so
+		//    a bulk export/import can be done
 		$query = "
 			SELECT
 				page_namespace,
@@ -199,21 +328,79 @@ class UniteTheWikis extends Maintenance {
 				$union
 			) AS tmp
 			GROUP BY page_namespace, page_title
-			ORDER BY page_namespace DESC, wiki";
+			ORDER BY page_namespace DESC, num_wikis ASC, wiki";
 
 		// echo $query;
 
+		$dbw = wfGetDB( DB_MASTER );
+		$result = $dbw->query( $query );
+
+		$inserts = array();
+
+		while( $row = $result->fetchRow() ) {
+
+			// need to remove numeric keys, else insert below fails
+			foreach ($row as $key => $val) {
+				if ( is_numeric($key) ) {
+					unset( $row[$key] );
+				}
+			}
+			$row['status'] = 0; // status of zero = not started
+
+			$inserts[] = $row;
+
+			if ( count($inserts) > 19 ) {
+				$dbw->insert(
+					$this->mergeDatabase . '.' . $this->mergeTable,
+					$inserts,
+					__METHOD__
+				);
+				$inserts = array();
+			}
+		}
+
+		// $dbw->query( "INSERT INTO {$this->mergeDatabase}.{$this->mergeTable}
+		// 	(page_namespace, page_title, num_wikis, uniques, wikis)
+		// 	VALUES
+		// 	()
+		// 	"
+		// );
+		// `insert_id` int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+		// `page_namespace` int NOT NULL,
+		// `page_title` varchar(255) binary NOT NULL,
+		// `num_wikis` int NOT NULL,
+		// `uniques` int NOT NULL,
+		// `wikis` varchar(255) binary NOT NULL,
+
+		$this->importSet();
+
+	}
+
+
+	protected function importSet () {
+
 		$dbr = wfGetDB( DB_SLAVE );
+		$dbNameAndTable = "{$this->mergeDatabase}.{$this->mergeTable}";
 
-		$this->output( "\nStarting import\n===============\n" );
+		$query = "SELECT import_id FROM $dbNameAndTable ORDER BY import_id DESC LIMIT 1";
+		$totalNumRows = $dbr->query( $query )->fetchObject()->import_id;
 
+		$query = "SELECT * FROM $dbNameAndTable
+			WHERE status = 0 ORDER BY import_id ASC
+			LIMIT {$this->importSetSize}";
 		$result = $dbr->query( $query );
-		$importQueue = array();
 
+		$importQueue = array();
+		$count = 0;
 
 		while( $page = $result->fetchObject() ) {
-
-			$this->output( "\nNext DB row. Wikis=" . $page->wikis
+			if ( $count === 0 ) {
+				$startId = $page->import_id;
+				$this->output( "\nStarting import at ID = $startId\n===============================\n" );
+			}
+			$count++;
+			$percent = round( $page->import_id / $totalNumRows, 3 ) . "%";
+			$this->output( "\nRow {$page->import_id} of $totalNumRows ($percent). Wikis=" . $page->wikis
 				. "; NS=" . $page->page_namespace
 				. "; title=" . $page->page_title );
 
@@ -223,7 +410,7 @@ class UniteTheWikis extends Maintenance {
 			// of the current loop
 			$importQueueWiki = count($importQueue) > 0 ? $importQueue[0]->wikis : $page->wikis;
 
-			if ( intval($page->num_wikis) ===  1 && $importQueueWiki === $page->wikis ) {
+			if ( intval($page->num_wikis) ===  1 && $importQueueWiki === $page->wikis && count($importQueue) < $this->maxSimoImport ) {
 				$this->output( "\n  --> Queue" );
 				$importQueue[] = $page;
 			}
@@ -246,11 +433,15 @@ class UniteTheWikis extends Maintenance {
 			$this->handleImport( $importQueue );
 		}
 
+		$this->doCompletionCheck();
+
 		return;
 
 	}
 
 	public function handleImport ( $pages ) {
+
+		$importIDs = array();
 
 		// Determine if this is multiple pages or just one
 		if ( is_array($pages) && count($pages) > 1 ) {
@@ -262,6 +453,7 @@ class UniteTheWikis extends Maintenance {
 				$pageTitleObj = Title::makeTitle( $page->page_namespace, $page->page_title );
 				$text = $pageTitleObj->getFullText();
 				$pageTitleText[] = $text;
+				$importIDs[] = $page->import_id;
 				$this->output( "\n  * $text" );
 			}
 		}
@@ -272,13 +464,14 @@ class UniteTheWikis extends Maintenance {
 			$wikis = explode( ",", $pages->wikis );
 			$pageTitleObj = Title::makeTitle( $pages->page_namespace, $pages->page_title );
 			$pageTitleText = $pageTitleObj->getFullText();
+			$importIDs[] = $pages->import_id;
 			$this->output( "\nImporting page $pageTitleText from " . $pages->wikis );
 		}
 
 
 		if ( count( $wikis ) === 1 ) {
 			$this->output( "\n\nImport unique page(s)\n" );
-			$this->importUniquePage( $pageTitleText, $wikis[0] );
+			$this->importUniquePages( $pageTitleText, $wikis[0] );
 		}
 		else if ( $pages->uniques === 1 ) {
 			$this->output( "\n\nImport identical pages\n" );
@@ -289,6 +482,57 @@ class UniteTheWikis extends Maintenance {
 			$this->importConflictedPages( $pageTitleText, $wikis );
 		}
 
+		$this->markImportsComplete( $importIDs );
+
+	}
+
+	protected function markImportsComplete ( $importIDs ) {
+		$dbw = wfGetDB( DB_MASTER );
+		$dbw->update(
+			"{$this->mergeDatabase}.{$this->mergeTable}",
+			array( "status" => 1 ),
+			array( "import_id" => $importIDs )
+		);
+	}
+
+	protected function anythingInDB () {
+		$dbw = wfGetDB( DB_MASTER );
+
+		// if there's already stuff in the merge table...
+		if ( $dbw->query( "SELECT * FROM {$this->mergeDatabase}.{$this->mergeTable} LIMIT 1" )->numRows() > 0 ) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	protected function doCompletionCheck () {
+
+		if ( ! $this->anythingInDB() ) {
+			$this->output( "\n\nMERGE COMPLETE" );
+		}
+		else {
+			$this->output( "\n\n{$this->importSetSize} items processed. Items still remain." );
+		}
+
+	}
+
+	protected function getImportRemaining () {
+		$dbw = wfGetDB( DB_MASTER );
+		return $dbw->selectField(
+			"{$this->mergeDatabase}.{$this->mergeTable}",
+			"COUNT(*)",
+			array( 'status' => 0 ),
+			__METHOD__
+		);
+	}
+
+	protected function cleanupDatabase () {
+		$dbw = wfGetDB( DB_MASTER );
+		$this->output( "\nCleaning up database...");
+		$dbw->selectField( "DROP DATABASE {$this->mergeDatabase}" );
+		$this->output( "\ndone." );
 	}
 
 }
