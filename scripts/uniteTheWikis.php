@@ -67,7 +67,7 @@ class UniteTheWikis extends Maintenance {
 	protected $db;
 	protected $maintDir = '/opt/meza/htdocs/mediawiki/maintenance/';
 	protected $maxSimoImport = 100;
-	protected $importSetSize = 100; // FIXME: for testing only
+	protected $importSetSize = 1000;
 	protected $mergeDatabase = "merge_wiki";
 	protected $mergeTable = "imports";
 	protected $configTable = "config";
@@ -460,6 +460,11 @@ class UniteTheWikis extends Maintenance {
 		else {
 			if ( is_array($pages) && count($pages) === 1 ) {
 				$pages = $pages[0];
+			}
+			else if ( is_array($page) ) {
+				$this->output( "\n\n\n\n  ## Array when object expected. Array length = " . count($pages) );
+				$this->output( "\n\n" . print_r( $pages, true ) );
+				continue;
 			}
 			$wikis = explode( ",", $pages->wikis );
 			$pageTitleObj = Title::makeTitle( $pages->page_namespace, $pages->page_title );
