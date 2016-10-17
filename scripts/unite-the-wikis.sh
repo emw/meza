@@ -74,14 +74,9 @@ WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" --cleanup
 
 for wiki in $(echo $wikis | sed "s/,/ /g")
 do
-    # call your procedure/other scripts here below
-    echo
-    echo "Importing files from $wiki"
-	echo
-
 	for dir in 0 1 2 3 4 5 6 7 8 9 a b c d e f
 	do
-		echo "Importing from directory $dir"
+		echo "Importing from $wiki directory $dir"
 		WIKI="$wiki_id" php "$m_mediawiki/maintenance/importImages.php" --search-recursively "$m_htdocs/wikis/$wiki/images/$dir"
 	done
 done
