@@ -38,23 +38,23 @@ echo -e "Enter the ID of the new wiki you're creating and hit [ENTER]: "
 read wiki_id
 done
 
-# # new wiki name
-# while [ -z "$wiki_name" ]
-# do
-# echo -e "Enter the name of the new wiki and hit [ENTER]: "
-# read wiki_name
-# done
+# new wiki name
+while [ -z "$wiki_name" ]
+do
+echo -e "Enter the name of the new wiki and hit [ENTER]: "
+read wiki_name
+done
 
-# # prompt user for MySQL root password
-# while [ -z "$mysql_root_pass" ]
-# do
-# echo -e "\nEnter MySQL root password and press [ENTER]: "
-# read -s mysql_root_pass
-# done
+# prompt user for MySQL root password
+while [ -z "$mysql_root_pass" ]
+do
+echo -e "\nEnter MySQL root password and press [ENTER]: "
+read -s mysql_root_pass
+done
 
 
-# # Create a wiki to merge into
-# source "$m_meza/scripts/create-wiki.sh"
+# Create a wiki to merge into
+source "$m_meza/scripts/create-wiki.sh"
 
 echo -e "\nSetting up merge"
 WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" "--mergedwiki=$wiki_id" "--sourcewikis=$wikis"
@@ -70,5 +70,22 @@ done;
 
 echo -e "\nCleaning up..."
 WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" --cleanup
+
+
+for wiki in $(echo $wikis | sed "s/,/ /g")
+do
+    # call your procedure/other scripts here below
+    echo
+    echo "Importing files from $wiki"
+	echo
+
+	for dir in 0 1 2 3 4 5 6 7 8 9 a b c d e f
+	do
+		echo "Importing from directory $dir"
+		WIKI="$wiki_id" php "$m_mediawiki/maintenance/importImages.php" --search-recursively "$m_htdocs/wikis/$wiki/images/$dir"
+	done
+done
+
+WIKI="$wiki_id" php "$m_mediawiki/maintenance/rebuildall.php" --cleanup
 
 echo -e "\nCOMPLETE!"
