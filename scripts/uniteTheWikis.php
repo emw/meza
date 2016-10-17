@@ -536,7 +536,7 @@ class UniteTheWikis extends Maintenance {
 	protected function cleanupDatabase () {
 		$dbw = wfGetDB( DB_MASTER );
 		$this->output( "\nCleaning up database...");
-		$dbw->selectField( "DROP DATABASE {$this->mergeDatabase}" );
+		$dbw->query( "DROP DATABASE {$this->mergeDatabase}" );
 		$this->output( "\ndone." );
 	}
 
