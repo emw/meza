@@ -219,6 +219,7 @@ class UniteTheWikis extends Maintenance {
 	}
 
 	public function dumpPageXML ($pages, $wiki) {
+		$this->output( "\nDump $wiki XML" );
 		unlink( $this->fileDumpList );
 		unlink( $this->fileXml );
 
@@ -233,6 +234,7 @@ class UniteTheWikis extends Maintenance {
 	}
 
 	public function importXML () {
+		$this->output( "\nImport XML" );
 		shell_exec( "WIKI={$this->mergedwiki} php {$this->maintDir}importDump.php --no-updates < {$this->fileXml}" );
 	}
 
@@ -399,7 +401,7 @@ class UniteTheWikis extends Maintenance {
 				$this->output( "\nStarting import at ID = $startId\n===============================\n" );
 			}
 			$count++;
-			$percent = round( $page->import_id / $totalNumRows, 3 ) . "%";
+			$percent = (round( $page->import_id / $totalNumRows, 3 ) * 100) . "%";
 			$this->output( "\nRow {$page->import_id} of $totalNumRows ($percent). Wikis=" . $page->wikis
 				. "; NS=" . $page->page_namespace
 				. "; title=" . $page->page_title );
@@ -461,7 +463,7 @@ class UniteTheWikis extends Maintenance {
 			if ( is_array($pages) && count($pages) === 1 ) {
 				$pages = $pages[0];
 			}
-			else if ( is_array($page) ) {
+			else if ( is_array($pages) ) {
 				$this->output( "\n\n\n\n  ## Array when object expected. Array length = " . count($pages) );
 				$this->output( "\n\n" . print_r( $pages, true ) );
 				continue;

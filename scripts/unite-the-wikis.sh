@@ -38,23 +38,30 @@ echo -e "Enter the ID of the new wiki you're creating and hit [ENTER]: "
 read wiki_id
 done
 
-# new wiki name
-while [ -z "$wiki_name" ]
-do
-echo -e "Enter the name of the new wiki and hit [ENTER]: "
-read wiki_name
-done
 
-# prompt user for MySQL root password
-while [ -z "$mysql_root_pass" ]
-do
-echo -e "\nEnter MySQL root password and press [ENTER]: "
-read -s mysql_root_pass
-done
+if [ -d "$m_htdocs/wikis/$wiki_id" ]; then
 
+else
 
-# Create a wiki to merge into
-source "$m_meza/scripts/create-wiki.sh"
+	# new wiki name
+	while [ -z "$wiki_name" ]
+	do
+		echo -e "Enter the name of the new wiki and hit [ENTER]: "
+		read wiki_name
+	done
+
+	# prompt user for MySQL root password
+	while [ -z "$mysql_root_pass" ]
+	do
+		echo -e "\nEnter MySQL root password and press [ENTER]: "
+		read -s mysql_root_pass
+	done
+
+	# Create a wiki to merge into
+	source "$m_meza/scripts/create-wiki.sh"
+
+fi
+
 
 echo -e "\nSetting up merge"
 WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" "--mergedwiki=$wiki_id" "--sourcewikis=$wikis"
@@ -68,10 +75,6 @@ while [[ `WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" --imports-rema
 	WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php"
 done;
 
-echo -e "\nCleaning up..."
-WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" --cleanup
-
-
 for wiki in $(echo $wikis | sed "s/,/ /g")
 do
 	for dir in 0 1 2 3 4 5 6 7 8 9 a b c d e f
@@ -82,5 +85,10 @@ do
 done
 
 WIKI="$wiki_id" php "$m_mediawiki/maintenance/rebuildall.php" --cleanup
+
+# Don't clean up merge table until rebuild all and images are imported. That
+# way if this needs to stop and restart it won't try to reimport.
+echo -e "\nCleaning up..."
+WIKI="$wiki_id" php "$m_meza/scripts/uniteTheWikis.php" --cleanup
 
 echo -e "\nCOMPLETE!"
