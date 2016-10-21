@@ -219,7 +219,7 @@ class UniteTheWikis extends Maintenance {
 	}
 
 	public function dumpPageXML ($pages, $wiki) {
-		$this->output( "\nDump $wiki XML" );
+		$this->output( "\nDump $wiki XML\n" );
 		unlink( $this->fileDumpList );
 		unlink( $this->fileXml );
 
@@ -401,7 +401,7 @@ class UniteTheWikis extends Maintenance {
 				$this->output( "\nStarting import at ID = $startId\n===============================\n" );
 			}
 			$count++;
-			$percent = (round( $page->import_id / $totalNumRows, 3 ) * 100) . "%";
+			$percent = round( ($page->import_id / $totalNumRows) * 100, 3 ) . "%";
 			$this->output( "\nRow {$page->import_id} of $totalNumRows ($percent). Wikis=" . $page->wikis
 				. "; NS=" . $page->page_namespace
 				. "; title=" . $page->page_title );

@@ -47,7 +47,7 @@ if [ -d "$m_htdocs/wikis/$wiki_id" ]; then
 	read confirm_merge
 
 	# Confirm you want to import into this existing wiki
-	if [ "$confirm" != "y" ]; then
+	if [ "$confirm_merge" != "y" ]; then
 		echo
 		echo "User does not want to merge into $wiki_id"
 		exit 1
