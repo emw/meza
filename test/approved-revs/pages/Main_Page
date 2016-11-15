@@ -1,0 +1,152 @@
+Main Page
+=========
+
+== Get started ==
+
+# Install meza
+# Run Approved Revs test setup ... TBD
+# Open four browsers (like Firefox, Chrome, Internet Explorer and Opera). This makes it easy to login as multiple users simultaneously. You may also be able to use incognito mode.
+# Confirm all browser tabs on correct URL; confirm logged in to correct account (anonymous account, User:Basic, User:Editor, User:Admin)
+
+== Simple approvals ==
+
+# User:Admin approve [[Initially unapproved page]]
+# User:Admin reapprove [[Initially unapproved page]]
+# User:Admin unapprove [[Initially unapproved page]]
+# Verify logs reflect changes
+
+=== File approvals ===
+
+# User:Admin confirm third revision visible of File:Test.jpg on [[File Redirects]]
+# User:Editor repeat
+# User:Basic repeat
+# Anonymous user repeat
+# User:Admin approve rev2 of File:Test.jpg
+# Verify logs reflect
+# User:Admin confirm rev-2 visible of File:Test.jpg on [[File redirects]] and images identical
+# User:Editor repeat
+# User:Basic repeat
+# Anonymous repeat
+# Anonymous verify "info page" links both go to File:Test.jpg
+# Anonymous verify "media" links both go to Test.jpg image
+# User:Admin approve rev1 of File:Test.jpg
+# User:Admin confirm rev-1 visible of File:Test.jpg on "File Redirects"
+# User:Editor repeat
+# User:Basic repeat
+# User:Anonymous repeat
+# User:Admin verify "info page" links both go to File:Test.jpg
+# User:Admin verify "media" links both go to Test.jpg image
+# User:Admin unapprove File:Test.jpg
+
+=== Unapprove message ====
+# User:Admin view [[User:Basic]], verify no "this page is unapproved" message
+# set $egApprovedRevsShowNotApprovedMessage = true;
+# User:Admin view [[User:Basic]], verify "this page is unapproved" message EXISTS
+# User:Admin approve [[User:Basic]]
+# User:Admin view [[User:Basic]], verify "this page is unapproved" replaced by appropriate message
+# User:Basic approve [[User:Basic]]
+# Verify logs reflect
+
+=== Approval rights by category ===
+# Verify Editor cannot approve [[With override]]
+# User:Basic approve [[With override]]
+# User:Editor approve [[Without override]]
+# User:Basic approve [[Without override]]
+
+=== Approval rights by SMW property ===
+# Verify Basic cannot approve [[Expert info]]
+# Uncomment [[Expert info]] line in ApprovedRevs settings
+# User:Basic approve [[Expert info]] semantic commit 1
+# User:Editor verify correct semantic data on approved page
+# User:Basic verify correct semantic data on latest page
+# User:Editor confirm cannot approve
+# User:Admin approve [[Expert info]] semantic commit 2
+# Anonymous verify cannot approve
+# Anonymous verify correct semantic data on approved page
+# Admin verify correct semantic data on latest page
+# Admin verify correct semantic data on Main Page
+
+=== Approvals by exclusive page ownership ===
+# User:Admin approve [[Basic's page]]
+# User:Basic approve [[Basic's page]]
+# User:Editor verify cannot approve
+# Anonymous verify cannot approve
+
+=== Approvals by unexclusive page ownership ===
+# User:Admin approve [[Not just Basic's]]
+# User:Admin verify has view-link-to-latest
+# User:Editor approve
+# User:Editor verify has view-link-to-latest
+# User:Basic approve
+# User:Basic verify has view-link-to-latest
+# Anonymous verify cannot approve
+# Anonymous verify has view-link-to-latest
+
+=== Don't allow viewing link to latest version ===
+# Set viewlinktolatest as *=false, Editors=true, sysop=true
+# On [[Not just basic's]],
+## User:Admin verify has view-link-to-latest
+## User:Editor verify has view-link-to-latest
+## User:Basic verify DOES NOT have view-link-to-latest
+## Anonymous verify DOES NOT have view-link-to-latest
+
+== Testing $egApprovedRevsBlankIfUnapproved and $egApprovedRevsAutomaticApprovals ==
+
+=== Disallow auto approvals for all users ===
+
+# Editor create page [[New editor page]]; Verify no automatic approval
+# Admin create page [[New admin page]]; Verify no automatic approval
+# Basic create page [[New basic page]]; Verify no automatic approval
+# Anonymous create [[New Anonymous Page]]; Verify no automatic approval
+
+=== Auto approvals after edits and approvals ===
+
+# In LocalSettings.php, set $egApprovedRevsAutomaticApprovals to false
+# User:Editor edit [[New editor page]], verify no auto-approval
+# User:Editor approve [[New editor page]]
+# User:Editor edit [[New editor page]] again
+# Verify no auto-approval on [[New editor page]]
+
+=== Blank if unapproved ===
+
+# Anonymous verify [[Do not approve]] not blank
+# set $egApprovedRevsBlankIfUnapproved = true;
+# Set $egApprovedRevsAutomaticApprovals = true;
+# Anonymous verify [[Do not approve]] IS blank
+
+=== Allow auto approvals for all users ===
+
+# User:Admin create page [[Another new admin page]]; Verify automatically approved (because User:Admin is allowed to approve pages in the main namespace)
+# User:Basic create page [[Another new basic page]]; Verify no automatic approval (because User:Basic is not allowed to approve pages in the main namespace)
+# User:Basic edit page [[Another new basic page]]; Verify no automatic approval
+
+== Special Pages ==
+
+=== [[Special:AdminLinks]] ===
+# Verify links display properly and work
+
+=== [[Special:ApprovedPages]] ===
+# Verify no errors in "approved revision is not their latest"
+# Verify no errors in "unapproved"
+# Verify no errors in "all with an approved revision"
+# Verify no errors in "undesignated approvals"
+
+=== [[Special:ApprovedFiles]] ===
+# Verify no errors in "approved revision is not their latest"
+# Verify no errors in "unapproved"
+# Verify no errors in "all with an approved revision"
+# Verify no errors in "undesignated approvals"
+
+=== Approve latest link in special pages ===
+# Set $egApprovedRevsShowApproveLatest = true;
+# Verify presence of "approve latest" link in Special:ApprovedPages -> Unapproved pages
+# Verify presence of "approve latest" link in Special:ApprovedFiles -> Unapproved files
+
+=== Approve all pages ===
+# Verify pages exist in Special:ApprovedPages -> Unapproved Pages
+# Run ApprovedRevs/maintenance/approveAllPages.php
+# Verify no pages in Special:ApprovedPages -> Unapproved Pages
+
+
+
+

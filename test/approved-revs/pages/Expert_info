@@ -1,0 +1,8 @@
+[[Category:Expert pages]]
+This is the Expert page. It is category Expert pages. Only experts can approve this page.
+
+Experts include: [[Is expert::Basic]].
+
+This page has one test property. Using #show on this PAGENAME for [[Property:Test prop]] = {{#show: {{PAGENAME}} |?Test prop }}
+
+The test property is set below:
