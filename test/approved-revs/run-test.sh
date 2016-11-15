@@ -6,10 +6,6 @@ source "/opt/meza/config/core/config.sh"
 source "$m_scripts/shell-functions/base.sh"
 rootCheck # function that does the checks for root/sudo
 
-ar_test="$m_test/approved-revs"
-ar_pages="$ar_test/pages"
-ar_images="$ar_test/images"
-mw_maint="$m_mediawiki/maintenance"
 
 
 # create-wiki.sh for ApprovedRevs
@@ -19,7 +15,16 @@ wiki_name="Test Approved Revs Wiki"
 slackwebhook=n
 source "$m_scripts/create-wiki.sh"
 
+ar_test="$m_test/approved-revs"
+ar_pages="$ar_test/pages"
+ar_images="$ar_test/images"
+mw_maint="$m_mediawiki/maintenance"
+wiki_id=arevs # do this again just to make sure
+
 # Put ApprovedRevsSettings.php in arevs wiki
+echo
+echo "Copying: $ar_test/ApprovedRevsSettings.php"
+echo "     to: $m_htdocs/wikis/$wiki_id/config"
 cp "$ar_test/ApprovedRevsSettings.php" "$m_htdocs/wikis/$wiki_id/config"
 echo -e "\n\nrequire_once __DIR__ . '/ApprovedRevsSettings.php';" > "$m_htdocs/wikis/$wiki_id/config/postLocalSettings.php"
 
@@ -38,23 +43,31 @@ tmp_images="/tmp/approved-revs-test-images"
 mkdir "$tmp_images"
 
 cp "$ar_images/number-1.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --comment="version 1"
+WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 1"
 
-rm "$tmp_images/Test.png"
+# sleep required so subsequent uploads don't cause old revs to have the same
+# timestamp (no one should be uploading new revs every second). I don't think
+# is actually required here, since at this point there are no old revs. Putting
+# pause just in case.
+sleep 2s
+rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-2.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --comment="version 2"
+WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 2" --overwrite
 
-rm "$tmp_images/Test.png"
+sleep 2s
+rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-3.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --comment="version 3"
+WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 3" --overwrite
 
-rm "$tmp_images/Test.png"
+sleep 2s
+rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-4.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --comment="version 4"
+WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 4" --overwrite
 
-rm "$tmp_images/Test.png"
+sleep 2s
+rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-5.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --comment="version 5"
+WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 5" --overwrite
 
 
 #

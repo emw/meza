@@ -1,11 +1,8 @@
-Main Page
-=========
-
 == Get started ==
 
-# Install meza
-# Run Approved Revs test setup ... TBD
-# Open four browsers (like Firefox, Chrome, Internet Explorer and Opera). This makes it easy to login as multiple users simultaneously. You may also be able to use incognito mode.
+# Install meza: https://github.com/enterprisemediawiki/meza
+# Run Approved Revs test setup: <code>sudo bash /opt/meza/test/approved-revs/run-test.sh</code>
+# Open four browsers (like Firefox, Chrome, Internet Explorer and Opera). This makes it easy to login as multiple users simultaneously. You may also use incognito mode to count as a browser.
 # Confirm all browser tabs on correct URL; confirm logged in to correct account (anonymous account, User:Basic, User:Editor, User:Admin)
 
 == Simple approvals ==
@@ -17,26 +14,27 @@ Main Page
 
 === File approvals ===
 
-# User:Admin confirm third revision visible of File:Test.jpg on [[File Redirects]]
+# User:Admin approve third revision of [[:File:Test.png]]
+# User:Admin confirm third revision visible of File:Test.png on [[File redirects]]
 # User:Editor repeat
 # User:Basic repeat
 # Anonymous user repeat
-# User:Admin approve rev2 of File:Test.jpg
+# User:Admin approve rev2 of File:Test.png
 # Verify logs reflect
-# User:Admin confirm rev-2 visible of File:Test.jpg on [[File redirects]] and images identical
+# User:Admin confirm rev-2 visible of File:Test.png on [[File redirects]] and images identical
 # User:Editor repeat
 # User:Basic repeat
 # Anonymous repeat
-# Anonymous verify "info page" links both go to File:Test.jpg
+# Anonymous verify "info page" links both go to File:Test.png
 # Anonymous verify "media" links both go to Test.jpg image
-# User:Admin approve rev1 of File:Test.jpg
-# User:Admin confirm rev-1 visible of File:Test.jpg on "File Redirects"
+# User:Admin approve rev1 of File:Test.png
+# User:Admin confirm rev-1 visible of File:Test.png on "File Redirects"
 # User:Editor repeat
 # User:Basic repeat
 # User:Anonymous repeat
-# User:Admin verify "info page" links both go to File:Test.jpg
-# User:Admin verify "media" links both go to Test.jpg image
-# User:Admin unapprove File:Test.jpg
+# User:Admin verify "info page" links both go to File:Test.png
+# User:Admin verify "media" links both go to Test.png image
+# User:Admin unapprove File:Test.png
 
 === Unapprove message ====
 # User:Admin view [[User:Basic]], verify no "this page is unapproved" message
@@ -146,7 +144,3 @@ Main Page
 # Verify pages exist in Special:ApprovedPages -> Unapproved Pages
 # Run ApprovedRevs/maintenance/approveAllPages.php
 # Verify no pages in Special:ApprovedPages -> Unapproved Pages
-
-
-
-

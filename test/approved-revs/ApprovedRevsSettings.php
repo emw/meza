@@ -26,6 +26,8 @@ $egApprovedRevsPermissions = array (
 
 );
 
+$wgGroupPermissions['Editors'] = $wgGroupPermissions['user'];
+
 // $wgGroupPermissions['*']['viewlinktolatest'] = false;
 // $wgGroupPermissions['editors']['viewlinktolatest'] = true;
 // $wgGroupPermissions['sysop']['viewlinktolatest'] = true;
