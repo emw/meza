@@ -44,7 +44,7 @@ mkdir "$tmp_images"
 image_command="WIKI=arevs php '$mw_maint/importImages.php' '$tmp_images'"
 
 cp "$ar_images/number-1.png" "$tmp_images/Test.png"
-su -c "$image_command" apache
+su - apache -s/bin/bash -c "$image_command"
 
 # sleep required so subsequent uploads don't cause old revs to have the same
 # timestamp (no one should be uploading new revs every second). I don't think
@@ -53,22 +53,22 @@ su -c "$image_command" apache
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-2.png" "$tmp_images/Test.png"
-su -c "$image_command" apache
+su - apache -s/bin/bash -c "$image_command"
 
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-3.png" "$tmp_images/Test.png"
-su -c "$image_command" apache
+su - apache -s/bin/bash -c "$image_command"
 
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-4.png" "$tmp_images/Test.png"
-su -c "$image_command" apache
+su - apache -s/bin/bash -c "$image_command"
 
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-5.png" "$tmp_images/Test.png"
-su -c "$image_command" apache
+su - apache -s/bin/bash -c "$image_command"
 
 
 #
