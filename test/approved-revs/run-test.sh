@@ -41,7 +41,7 @@ WIKI=arevs php "$mw_maint/createAndPromote.php" --force Basic 1234
 #
 tmp_images="/tmp/approved-revs-test-images"
 mkdir "$tmp_images"
-image_command="WIKI=arevs php '$mw_maint/importImages.php' '$tmp_images'"
+image_command="WIKI=arevs php '$mw_maint/importImages.php' '$tmp_images' --overwrite"
 
 cp "$ar_images/number-1.png" "$tmp_images/Test.png"
 su - apache -s/bin/bash -c "$image_command"
