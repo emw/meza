@@ -36,7 +36,7 @@
 # User:Admin verify "media" links both go to Test.png image
 # User:Admin unapprove File:Test.png
 
-=== Unapprove message ====
+=== Unapprove message ===
 # User:Admin view [[User:Basic]], verify no "this page is unapproved" message
 # set $egApprovedRevsShowNotApprovedMessage = true;
 # User:Admin view [[User:Basic]], verify "this page is unapproved" message EXISTS

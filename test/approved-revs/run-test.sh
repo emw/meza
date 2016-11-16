@@ -41,9 +41,10 @@ WIKI=arevs php "$mw_maint/createAndPromote.php" --force Basic 1234
 #
 tmp_images="/tmp/approved-revs-test-images"
 mkdir "$tmp_images"
+image_command="WIKI=arevs php '$mw_maint/importImages.php' '$tmp_images'"
 
 cp "$ar_images/number-1.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 1"
+su -c "$image_command" apache
 
 # sleep required so subsequent uploads don't cause old revs to have the same
 # timestamp (no one should be uploading new revs every second). I don't think
@@ -52,22 +53,22 @@ WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 1"
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-2.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 2" --overwrite
+su -c "$image_command" apache
 
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-3.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 3" --overwrite
+su -c "$image_command" apache
 
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-4.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 4" --overwrite
+su -c "$image_command" apache
 
 sleep 2s
 rm -f "$tmp_images/Test.png"
 cp "$ar_images/number-5.png" "$tmp_images/Test.png"
-WIKI=arevs php "$mw_maint/importImages.php" "$tmp_images" --summary="version 5" --overwrite
+su -c "$image_command" apache
 
 
 #
