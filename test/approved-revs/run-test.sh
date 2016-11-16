@@ -26,7 +26,7 @@ echo
 echo "Copying: $ar_test/ApprovedRevsSettings.php"
 echo "     to: $m_htdocs/wikis/$wiki_id/config"
 cp "$ar_test/ApprovedRevsSettings.php" "$m_htdocs/wikis/$wiki_id/config"
-echo -e "\n\nrequire_once __DIR__ . '/ApprovedRevsSettings.php';" > "$m_htdocs/wikis/$wiki_id/config/postLocalSettings.php"
+echo -e "\n\nrequire_once __DIR__ . '/ApprovedRevsSettings.php';" >> "$m_htdocs/wikis/$wiki_id/config/postLocalSettings.php"
 
 
 # Create users: Admin (Group:sysop), Editor (Group:Editors), Basic (no special group)
