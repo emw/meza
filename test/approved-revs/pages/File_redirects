@@ -1,39 +1,39 @@
 Files and redirects
 
 <pre>
-[[File:Test.jpg]]
+[[File:Test.png]]
 
-[[:File:Test.jpg]]
+[[:File:Test.png]]
 
-[[Media:Test.jpg]]
+[[Media:Test.png]]
 
-[[:Media:Test.jpg]]
+[[:Media:Test.png]]
 
-[[File:Redirect.jpg]]
+[[File:Redirect.png]]
 
-[[:File:Redirect.jpg]]
+[[:File:Redirect.png]]
 
-[[Media:Redirect.jpg]]
+[[Media:Redirect.png]]
 
-[[:Media:Redirect.jpg]]
+[[:Media:Redirect.png]]
 </pre>
 
-== Test.jpg ==
+== Test.png ==
 
-[[File:Test.jpg]]
+[[File:Test.png]]
 
-[[:File:Test.jpg]]
+[[:File:Test.png]]
 
-[[Media:Test.jpg]]
+[[Media:Test.png]]
 
-[[:Media:Test.jpg]]
+[[:Media:Test.png]]
 
-== Redirect.jpg ==
+== Redirect.png ==
 
-[[File:Redirect.jpg]]
+[[File:Redirect.png]]
 
-[[:File:Redirect.jpg]]
+[[:File:Redirect.png]]
 
-[[Media:Redirect.jpg]]
+[[Media:Redirect.png]]
 
-[[:Media:Redirect.jpg]]
+[[:Media:Redirect.png]]

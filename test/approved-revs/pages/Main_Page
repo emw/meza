@@ -8,7 +8,7 @@
 == Simple approvals ==
 
 # User:Admin approve [[Initially unapproved page]]
-# User:Admin reapprove [[Initially unapproved page]]
+# User:Admin approve different version [[Initially unapproved page]]
 # User:Admin unapprove [[Initially unapproved page]]
 # Verify logs reflect changes
 
@@ -39,6 +39,8 @@
 === Unapprove message ===
 # User:Admin view [[User:Basic]], verify no "this page is unapproved" message
 # set $egApprovedRevsShowNotApprovedMessage = true;
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #1".
 # User:Admin view [[User:Basic]], verify "this page is unapproved" message EXISTS
 # User:Admin approve [[User:Basic]]
 # User:Admin view [[User:Basic]], verify "this page is unapproved" replaced by appropriate message
@@ -53,7 +55,9 @@
 
 === Approval rights by SMW property ===
 # Verify Basic cannot approve [[Expert info]]
-# Uncomment [[Expert info]] line in ApprovedRevs settings
+# Uncomment "Expert info" setting
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #2".
 # User:Basic approve [[Expert info]] semantic commit 1
 # User:Editor verify correct semantic data on approved page
 # User:Basic verify correct semantic data on latest page
@@ -62,7 +66,7 @@
 # Anonymous verify cannot approve
 # Anonymous verify correct semantic data on approved page
 # Admin verify correct semantic data on latest page
-# Admin verify correct semantic data on Main Page
+# Admin verify correct semantic data on Main Page: Test prop = {{#show: Expert info |? Test prop }}
 
 === Approvals by exclusive page ownership ===
 # User:Admin approve [[Basic's page]]
@@ -81,42 +85,71 @@
 # Anonymous verify has view-link-to-latest
 
 === Don't allow viewing link to latest version ===
-# Set viewlinktolatest as *=false, Editors=true, sysop=true
-# On [[Not just basic's]],
+# Set viewlinktolatest permissionsas *=false, Editors=true, sysop=true
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #3".
+# On [[Not just Basic's]],
 ## User:Admin verify has view-link-to-latest
 ## User:Editor verify has view-link-to-latest
 ## User:Basic verify DOES NOT have view-link-to-latest
 ## Anonymous verify DOES NOT have view-link-to-latest
 
 == Testing $egApprovedRevsBlankIfUnapproved and $egApprovedRevsAutomaticApprovals ==
+At the start of this section, automatic approvals are disallowed. Automatic approvals are affected by blank-if-unapproved, so it's important to test all four cases:
 
-=== Disallow auto approvals for all users ===
+# auto-approvals = off, blank-if-unapproved = off
+# auto-approvals = off, blank-if-unapproved = on
+# auto-approvals = on, blank-if-unapproved = off
+# auto-approvals = on, blank-if-unapproved = on
 
-# Editor create page [[New editor page]]; Verify no automatic approval
+=== Off/Off: Disallow auto approvals for all users ===
+
+# Default settings are Off/Off, no change required
 # Admin create page [[New admin page]]; Verify no automatic approval
+# Editor create page [[New editor page]]; Verify no automatic approval
 # Basic create page [[New basic page]]; Verify no automatic approval
-# Anonymous create [[New Anonymous Page]]; Verify no automatic approval
+# Anonymous create [[New anonymous page]]; Verify no automatic approval
 
-=== Auto approvals after edits and approvals ===
+=== Off/Off: No auto approvals after edits and approvals ===
 
-# In LocalSettings.php, set $egApprovedRevsAutomaticApprovals to false
 # User:Editor edit [[New editor page]], verify no auto-approval
 # User:Editor approve [[New editor page]]
 # User:Editor edit [[New editor page]] again
 # Verify no auto-approval on [[New editor page]]
 
-=== Blank if unapproved ===
+=== Off/On: No auto approvals, blank if unapproved ===
 
+# Set Off/On
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #4".
+# User:Editor view [[New editor page]], verify approved version showing
+# User:Editor edit [[New editor page]], verify no auto-approval
+# User:Editor unapprove [[New editor page]], verify blank
+# User:Editor edit [[New editor page]], verify no auto-approval, still blank page
+# User:Editor create [[Yet another editor page]], verify no auto approval, page is blank
+# User:Editor edit [[Yet another editor page]] again, verify no auto approval, page is blank
+
+=== On/Off: Allow auto-approvals, not blank if unapproved ===
+
+# Set On/Off
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #5".
+# Admin edit [[New admin page]]; Verify functioning automatic approval
+# User:Admin create [[Another new admin page]]; Verify automatically approved (because User:Admin is allowed to approve pages in the main namespace)
+# User:Basic create [[Another new basic page]]; Verify no automatic approval (because User:Basic is not allowed to approve pages in the main namespace)
+# User:Basic edit [[Another new basic page]]; Verify no automatic approval
+
+=== On/On: Allow auto-approvals, Blank if unapproved ===
+
+# Set On/On
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #6".
 # Anonymous verify [[Do not approve]] not blank
 # set $egApprovedRevsBlankIfUnapproved = true;
 # Set $egApprovedRevsAutomaticApprovals = true;
 # Anonymous verify [[Do not approve]] IS blank
 
 === Allow auto approvals for all users ===
-
-# User:Admin create page [[Another new admin page]]; Verify automatically approved (because User:Admin is allowed to approve pages in the main namespace)
-# User:Basic create page [[Another new basic page]]; Verify no automatic approval (because User:Basic is not allowed to approve pages in the main namespace)
-# User:Basic edit page [[Another new basic page]]; Verify no automatic approval
 
 == Special Pages ==
 
