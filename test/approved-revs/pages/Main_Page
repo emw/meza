@@ -5,6 +5,8 @@
 # Open four browsers (like Firefox, Chrome, Internet Explorer and Opera). This makes it easy to login as multiple users simultaneously. You may also use incognito mode to count as a browser.
 # Confirm all browser tabs on correct URL; confirm logged in to correct account (anonymous account, User:Basic, User:Editor, User:Admin)
 
+= FIXME: Need examples of files and pages in special pages =
+
 == Simple approvals ==
 
 # User:Admin approve [[Initially unapproved page]]
@@ -14,27 +16,17 @@
 
 === File approvals ===
 
-# User:Admin approve third revision of [[:File:Test.png]]
-# User:Admin confirm third revision visible of File:Test.png on [[File redirects]]
-# User:Editor repeat
+# User:Admin approve third revision of [[:[[:File:Test.png]]]]
+# User:Admin confirm third revision visible of [[:File:Test.png]] on [[File redirects]], links work
 # User:Basic repeat
-# Anonymous user repeat
-# User:Admin approve rev2 of File:Test.png
+# User:Admin approve second revision of [[:File:Test.png]]
 # Verify logs reflect
-# User:Admin confirm rev-2 visible of File:Test.png on [[File redirects]] and images identical
-# User:Editor repeat
-# User:Basic repeat
+# User:Editor confirm second revision visible of [[:File:Test.png]] on [[File redirects]], links work
 # Anonymous repeat
-# Anonymous verify "info page" links both go to File:Test.png
-# Anonymous verify "media" links both go to Test.jpg image
-# User:Admin approve rev1 of File:Test.png
-# User:Admin confirm rev-1 visible of File:Test.png on "File Redirects"
-# User:Editor repeat
-# User:Basic repeat
-# User:Anonymous repeat
-# User:Admin verify "info page" links both go to File:Test.png
-# User:Admin verify "media" links both go to Test.png image
-# User:Admin unapprove File:Test.png
+# User:Admin approve first version of [[:File:Test.png]]
+# User:Admin confirm first version visible of [[:File:Test.png]] on [[File redirects]], links work
+# User:Admin unapprove [[:File:Test.png]]
+# User:Basic confirm latest revision visible of [[:File:Test.png]] on [[File redirects]], links work
 
 === Unapprove message ===
 # User:Admin view [[User:Basic]], verify no "this page is unapproved" message
@@ -134,22 +126,22 @@ At the start of this section, automatic approvals are disallowed. Automatic appr
 # Set On/Off
 ## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
 ## Uncomment "uncomment #5".
-# Admin edit [[New admin page]]; Verify functioning automatic approval
-# User:Admin create [[Another new admin page]]; Verify automatically approved (because User:Admin is allowed to approve pages in the main namespace)
-# User:Basic create [[Another new basic page]]; Verify no automatic approval (because User:Basic is not allowed to approve pages in the main namespace)
+# Admin unapprove [[New admin page]] if required
+# Admin edit [[New admin page]]; Verify no automatic approval (since it's unapproved and blank-if-unapproved is not set)
+# Admin approve [[New admin page]]
+# Admin edit [[New admin page]]; Verify automatic approval
+# User:Admin create [[Another new admin page]]; Verify no automatic approval (since blank-if-unapproved = false)
+# User:Basic create [[Another new basic page]]; Verify no automatic approval (User:Basic not allowed to approve pages in the main namespace and blank-if-unapproved = false)
 # User:Basic edit [[Another new basic page]]; Verify no automatic approval
 
 === On/On: Allow auto-approvals, Blank if unapproved ===
 
+# Anonymous verify [[Do not approve]] is not blank
 # Set On/On
 ## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
 ## Uncomment "uncomment #6".
-# Anonymous verify [[Do not approve]] not blank
-# set $egApprovedRevsBlankIfUnapproved = true;
-# Set $egApprovedRevsAutomaticApprovals = true;
 # Anonymous verify [[Do not approve]] IS blank
-
-=== Allow auto approvals for all users ===
+# User:Admin edit [[Do not approve]]; verify auto-approval (since auto-approvals = true and blank-if-unapproved = true)
 
 == Special Pages ==
 
@@ -169,7 +161,11 @@ At the start of this section, automatic approvals are disallowed. Automatic appr
 # Verify no errors in "undesignated approvals"
 
 === Approve latest link in special pages ===
+# Verify no "approve latest" link in Special:ApprovedPages -> Unapproved pages
+# Verify no "approve latest" link in Special:ApprovedFiles -> Unapproved files
 # Set $egApprovedRevsShowApproveLatest = true;
+## <code>sudo vim /opt/meza/htdocs/wikis/arevs/config/ApprovedRevsSettings.php</code>
+## Uncomment "uncomment #7".
 # Verify presence of "approve latest" link in Special:ApprovedPages -> Unapproved pages
 # Verify presence of "approve latest" link in Special:ApprovedFiles -> Unapproved files
 

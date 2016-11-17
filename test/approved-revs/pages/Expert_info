@@ -1,8 +1,13 @@
 [[Category:Expert pages]]
 This is the Expert page. It is category Expert pages. Only experts can approve this page.
 
-Experts include: [[Is expert::Basic]].
+== Who is an expert, and can approve this page? ==
+Experts include: [[Is expert::User:Basic]].
 
-This page has one test property. Using #show on this PAGENAME for [[Property:Test prop]] = {{#show: {{PAGENAME}} |?Test prop }}
+== What is the property "Test prop" set to on the approved revision? ==
+This page has one test property. Using #show on this PAGENAME for [[Property:Test prop]]:
 
-The test property is set below:
+The approved version of this page has Test prop = {{#show: {{PAGENAME}} |?Test prop }}
+
+== "Test prop" value if this version of the page were approved? ==
+This version (not necessarily the approved version) has Test prop set to:
