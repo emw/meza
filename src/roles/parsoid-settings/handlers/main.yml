@@ -9,3 +9,17 @@
     name: parsoid
     state: restarted
   when: docker_skip_tasks is not defined or not docker_skip_tasks
+
+# Debug commands for troubleshooting Issue #604
+- name: Parsoid debug 1
+  shell: "systemctl status parsoid.service -l | tail -50"
+  register: parsoid_status
+  listen: restart parsoid
+- name: Parsoid debug 2
+  shell: "journalctl -xe | tail -50"
+  register: parsoid_journalctl
+  listen: restart parsoid
+- debug: { var: parsoid_status }
+  listen: restart parsoid
+- debug: { var: parsoid_journalctl }
+  listen: restart parsoid
