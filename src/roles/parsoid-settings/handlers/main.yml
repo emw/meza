@@ -3,6 +3,10 @@
 - name: reload systemd
   command: systemctl daemon-reload
   when: docker_skip_tasks is not defined or not docker_skip_tasks
+- name: Pause after systemd reload for debugging Issue 604
+  pause:
+    seconds: 30
+  listen: reload systemd
 
 - name: restart parsoid
   service:
